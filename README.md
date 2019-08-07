@@ -3,7 +3,7 @@
 
 ### 示例代码
 ```golang
-file, err := os.Create("rect.png")
+	file, err := os.Create("rect.png")
 	if err != nil {
 		panic(err)
 	}
