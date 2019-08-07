@@ -44,3 +44,5 @@
 	//将画好的图形保持至png文件
 	png.Encode(file, paintBrush.Palette)
 ```
+#### 效果图
+![login](https://github.com/348052148/go-geometry/edit/master/output.png)
