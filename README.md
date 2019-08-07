@@ -45,4 +45,4 @@
 	png.Encode(file, paintBrush.Palette)
 ```
 #### 效果图
-![效果图](https://github.com/348052148/go-geometry/edit/master/output.png)
+![效果图，如果未正常显示请点击查看](https://github.com/348052148/go-geometry/edit/master/output.png)
