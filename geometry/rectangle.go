@@ -2,6 +2,7 @@ package geometry
 
 
 type Rectangle struct {
+	Polygon
 	//宽
 	Width int
 	//高
@@ -14,34 +15,29 @@ type Rectangle struct {
 }
 
 func NewRectangle(x, y int, width, height int) Rectangle  {
-	return Rectangle{
+	r := Rectangle{
 		Width:width,
 		Height:height,
 		X:x,
 		Y:y,
 		angle:0,
 	}
+	r.Vertexs = r.setVertexs()
+	return r
 }
 
-//平移
-func (rectangle Rectangle)Translation(distance float64)  Geometry {
-	rectangle.X , rectangle.Y = int(float64(rectangle.X) + distance) , int(float64(rectangle.Y) + distance)
-	return rectangle
+func (rectangle Rectangle)setVertexs() []Point {
+	return []Point{
+		Pt(rectangle.X , rectangle.Y),
+		Pt(rectangle.X , rectangle.Y + rectangle.Height),
+		Pt(rectangle.X + rectangle.Width, rectangle.Y + rectangle.Height),
+		Pt(rectangle.X + rectangle.Width, rectangle.Y),
+	}
 }
+
 
 func (rectangle Rectangle)Flip()  {
 
-}
-//旋转
-func (rectangle Rectangle)Rotate(rpos Point,angle float64) Geometry {
-	return Rectangle{
-		X:rectangle.X,
-		Y:rectangle.Y,
-		Width:rectangle.Width,
-		Height:rectangle.Height,
-		rpos:rpos,
-		angle:angle,
-	}
 }
 
 func (rectangle Rectangle)SeekSides() []LineSegment {
@@ -64,8 +60,8 @@ func (rectangle Rectangle)SeekSides() []LineSegment {
 }
 //绘制矩形
 func(rectangle Rectangle)Draw(drawFunc func(x, y int))   {
-	for _, lineSegment := range rectangle.SeekSides() {
-		lineSegment.Draw(drawFunc)
+	for _, lineSegment := range rectangle.GetEdges() {
+		LineSegment(lineSegment).Draw(drawFunc)
 	}
 }
 

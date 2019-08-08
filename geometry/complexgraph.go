@@ -9,7 +9,7 @@ type Geometry interface {
 //变换
 type Transformation interface {
 	//平移
-	Translation(distance float64)  Geometry
+	Translation(distance float64, angle float64)  Geometry
 	//旋转
 	Rotate(rpos Point,angle float64) Geometry
 	//翻转
@@ -25,11 +25,11 @@ func (complex ComplexGraph)AddGeometry(geometry Geometry) ComplexGraph {
 	return complex
 }
 
-func (complex ComplexGraph)Translation(distance float64)  Geometry {
+func (complex ComplexGraph)Translation(distance float64,  angle float64)  Geometry {
 	complex.geometryList = func(geomes []Geometry) []Geometry {
 		var combiGeomes []Geometry
 		for _, geome := range geomes  {
-			combiGeomes = append(combiGeomes, geome.(Transformation).Translation(distance))
+			combiGeomes = append(combiGeomes, geome.(Transformation).Translation(distance, angle))
 		}
 		return combiGeomes
 	}(complex.geometryList)

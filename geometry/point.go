@@ -6,8 +6,6 @@ import (
 
 type Point struct {
 	X, Y int
-	angle float64
-	distance float64
 }
 
 func Pt(x, y int) Point {
@@ -24,35 +22,33 @@ func NewPoint(x, y int) Point  {
 	}
 }
 
-//旋转
-func (point Point)Rotate(angle float64)  {
-	point.angle = angle
-}
-
+//
 func (point Point)Add(distance int) Point  {
 	point.X, point.Y = point.X + distance, point.Y +distance
 	return point
 }
 
-func (point Point)Translation(distance float64)  Geometry{
-	point.X, point.Y = int(float64(point.X) + distance), int(float64(point.Y) + distance)
+func (point Point)Translation(distance float64, angle float64)  Geometry{
+	point.X, point.Y = int(float64(point.X) + distance * math.Cos(2 * math.Pi / 360 * angle)), int(float64(point.Y) + distance * math.Sin(2 * math.Pi / 360 * angle))
 	return point
 }
 
-//前进
-func (point Point)Forward( d float64) Point {
-	point.distance = d
-	return point
+func (point Point)Flip()  {
+}
+
+func (point Point)Rotate(rpos Point, angle float64) Geometry {
+	return Pt(
+		int(float64(point.X - rpos.X) * math.Cos(math.Pi/ 180 * angle) - float64(point.Y - rpos.Y) * math.Sin(math.Pi/ 180 * angle)) + rpos.X,
+		int(float64(point.X - rpos.X) * math.Sin(math.Pi/ 180 * angle) + float64(point.Y - rpos.Y) * math.Cos(math.Pi/ 180 * angle)) + rpos.Y,
+	)
+}
+
+func (point Point)Eq(point2 Point) bool {
+	return point.X == point2.X && point.Y == point2.Y
 }
 
 func (point Point)Draw(drawFunc func(x, y int))  {
-	var x, y float64
-	y = float64(point.Y) + point.distance * math.Sin(2 * math.Pi / 360 * point.angle)
-	x = float64(point.X) + point.distance * math.Cos(2 * math.Pi / 360 * point.angle)
-	LineSegment{
-		StartPoint:Pt(point.X, point.Y),
-		EndPoint:Pt(int(x), int(y)),
-	}.Draw(drawFunc)
+	drawFunc(point.X, point.Y)
 }
 
 func (point Point)CenterPoint() Point  {

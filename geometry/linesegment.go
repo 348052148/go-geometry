@@ -1,10 +1,5 @@
 package geometry
 
-import (
-	"math"
-)
-
-
 type LineSegment struct {
 	//起始点
 	StartPoint Point
@@ -12,17 +7,50 @@ type LineSegment struct {
 	EndPoint Point
 }
 
-func NewLineSegment(spoint [2]int, epoint [2]int) LineSegment {
+func NewLineSegment(spoint Point, epoint Point) LineSegment {
 	return LineSegment{
-		StartPoint:Pt(spoint[0], spoint[1]),
-		EndPoint:Pt(epoint[0], epoint[1]),
+		StartPoint: spoint,
+		EndPoint: epoint,
 	}
 }
 
+//获取线段与线段之间的交点
+func (lineSegment LineSegment)CrossPointAsLineSegment(geometry LineSegment) []Point  {
+	k1, b1 := PrimaryFunc(lineSegment.StartPoint, lineSegment.EndPoint)
+	k2, b2 := PrimaryFunc(geometry.StartPoint, geometry.EndPoint)
+	//k1 * x + b1 = k2 * x + b2
+	//x  = (b2 - b1) / (k1 - k2)
+	x :=  int((b2 - b1) / (k1 - k2))
+	fun := LinearFunc(lineSegment.StartPoint, lineSegment.EndPoint)
+	return []Point{
+		Pt(fun(x, 0)),
+	}
+}
+
+//判断点是否在直线上
+func (lineSegment LineSegment)IsCrossPointAsLineSegment(point Point) bool  {
+	k1,_ := PrimaryFunc(point, lineSegment.StartPoint)
+	k2,_ := PrimaryFunc(lineSegment.StartPoint, lineSegment.EndPoint)
+	//如果斜率相同
+	if k1 == k2 {
+		//判断是否在线段范围
+		if lineSegment.StartPoint.Y > lineSegment.EndPoint.Y {
+			if lineSegment.EndPoint.Y <= point.Y && point.Y <= lineSegment.StartPoint.Y {
+				return true
+			}
+		}else {
+			if lineSegment.StartPoint.Y <= point.Y && point.Y <= lineSegment.EndPoint.Y {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 //平移
-func (lineSegment LineSegment)Translation(distance float64)  Geometry{
-	lineSegment.StartPoint.X, lineSegment.StartPoint.Y = int(float64(lineSegment.StartPoint.X) + distance), int(float64(lineSegment.StartPoint.Y) + distance)
-	lineSegment.EndPoint.X, lineSegment.EndPoint.Y = int(float64(lineSegment.EndPoint.X) + distance), int(float64(lineSegment.EndPoint.Y) + distance)
+func (lineSegment LineSegment)Translation(distance float64, angle float64)  Geometry{
+	lineSegment.StartPoint = lineSegment.StartPoint.Translation(distance, angle).(Point)
+	lineSegment.EndPoint = lineSegment.EndPoint.Translation(distance, angle).(Point)
 	return lineSegment
 }
 
@@ -32,14 +60,8 @@ func (lineSegment LineSegment)Flip()  {
 //旋转
 func (lineSegment LineSegment)Rotate(rpos Point,angle float64) Geometry {
 	return LineSegment{
-		Pt(
-			int(float64(lineSegment.StartPoint.X - rpos.X) * math.Cos(math.Pi/ 180 * angle) - float64(lineSegment.StartPoint.Y - rpos.Y) * math.Sin(math.Pi/ 180 * angle)) + rpos.X,
-			int(float64(lineSegment.StartPoint.X - rpos.X) * math.Sin(math.Pi/ 180 * angle) + float64(lineSegment.StartPoint.Y - rpos.Y) * math.Cos(math.Pi/ 180 * angle)) + rpos.Y,
-		),
-		Pt(
-			int(float64(lineSegment.EndPoint.X - rpos.X) * math.Cos(math.Pi/ 180 * angle) - float64(lineSegment.EndPoint.Y - rpos.Y) * math.Sin(math.Pi/ 180 * angle)) + rpos.X,
-			int(float64(lineSegment.EndPoint.X - rpos.X) * math.Sin(math.Pi/ 180 * angle) + float64(lineSegment.EndPoint.Y - rpos.Y) * math.Cos(math.Pi/ 180 * angle)) + rpos.Y,
-		),
+		lineSegment.StartPoint.Rotate(rpos, angle).(Point),
+		lineSegment.EndPoint.Rotate(rpos, angle).(Point),
 	}
 }
 
@@ -65,8 +87,7 @@ func (lineSegment LineSegment)Draw(drawFunc func(x, y int))  {
 	}
 }
 
-func LinearFunc(pos1, pos2 Point) func(x, y int)(int, int) {
-	// y = kx + b
+func PrimaryFunc(pos1, pos2 Point) (float64,float64) {
 	var k, b float64
 	if (pos2.X - pos1.X) == 0 {
 		k = 0
@@ -74,6 +95,12 @@ func LinearFunc(pos1, pos2 Point) func(x, y int)(int, int) {
 		k = float64(pos2.Y - pos1.Y) / float64(pos2.X - pos1.X)
 	}
 	b = float64(pos1.Y) - k * float64( pos1.X)
+	return k, b
+}
+
+func LinearFunc(pos1, pos2 Point) func(x, y int)(int, int) {
+	// y = kx + b
+	k, b := PrimaryFunc(pos1, pos2)
 	return func(x, y int) (int, int) {
 		return x, int(k * float64(x) + b)
 	}
@@ -81,13 +108,7 @@ func LinearFunc(pos1, pos2 Point) func(x, y int)(int, int) {
 
 func InverseLinearFunc(pos1, pos2 Point) func(x, y int)(int, int) {
 	// x = (y -b ) / k
-	var k, b float64
-	if (pos2.X - pos1.X) == 0 {
-		k = 0
-	}else {
-		k = float64(pos2.Y - pos1.Y) / float64(pos2.X - pos1.X)
-	}
-	b = float64(pos1.Y) - k * float64( pos1.X)
+	k, b := PrimaryFunc(pos1, pos2)
 	return func(x, y int) (int,int) {
 		if k == 0 {
 			return x, y

@@ -32,8 +32,8 @@ func (circular Circular)Flip() {
 
 }
 //平移
-func (circular Circular)Translation(distance float64)  Geometry {
-	circular.CenterOfCircular.X, circular.CenterOfCircular.Y = int(float64(circular.CenterOfCircular.X) + distance), int(float64(circular.CenterOfCircular.Y) + distance)
+func (circular Circular)Translation(distance float64,  angle float64)  Geometry {
+	circular.CenterOfCircular = circular.CenterOfCircular.Translation(distance, angle).(Point)
 	return circular
 }
 
